@@ -49,6 +49,8 @@ describe('assertSafeAuthorizationUrl', () => {
   it('allows xAI auth hosts over https', () => {
     expect(assertSafeAuthorizationUrl('https://auth.x.ai/oauth2/device/verify')).toContain('auth.x.ai')
     expect(assertSafeAuthorizationUrl('https://accounts.x.ai/sign-in')).toContain('accounts.x.ai')
+    expect(assertSafeAuthorizationUrl('https://x.ai/device')).toContain('x.ai')
+    expect(assertSafeAuthorizationUrl('https://grok.com/oauth')).toContain('grok.com')
   })
 
   it('rejects http and unexpected hosts', () => {

@@ -58,7 +58,7 @@ export async function loginXaiOAuthSession(
   session: XaiOAuthSession,
 ): Promise<void> {
   await loginXaiOAuth(interaction, session.store)
-  await session.refreshLiveCatalog()
+  void session.refreshLiveCatalog()
 }
 
 export async function importXaiOAuthSession(
@@ -66,5 +66,5 @@ export async function importXaiOAuthSession(
   filename?: string,
 ): Promise<void> {
   await importXaiOAuthFromGrok(session.store, filename)
-  await session.refreshLiveCatalog()
+  void session.refreshLiveCatalog()
 }

@@ -11,16 +11,47 @@ import { DEFAULT_XAI_OAUTH_MODEL } from './ids.ts'
 export const XAI_MODELS_URL = 'https://api.x.ai/v1/models'
 const BODY_LIMIT_BYTES = 4 * 1024 * 1024
 const LIST_TIMEOUT_MS = 15_000
-const NON_CHAT_MODEL = /imagine|image|video|tts|voice|stt|whisper|embed|realtime|audio/i
+const HIDDEN_GROK = /(?:^|-)(tts|voice|stt|whisper|embed|realtime)(?:-|$)/i
 
-/** Chat-capable Grok ids, plus anything already in the installed catalog. */
+const BUNDLED_EXTRAS: ReadonlyArray<{ id: string; name: string; xhigh?: boolean }> = [
+  { id: 'grok-4.6', name: 'Grok 4.6', xhigh: true },
+  { id: 'grok-imagine-image', name: 'Grok Imagine Image' },
+  { id: 'grok-imagine-image-quality', name: 'Grok Imagine Image Quality' },
+  { id: 'grok-imagine-video', name: 'Grok Imagine Video' },
+  { id: 'grok-imagine-video-1.5', name: 'Grok Imagine Video 1.5' },
+]
+
+/** Grok chat / imagine ids, plus anything already in the installed catalog. */
 export function isSelectableChatModel(
   id: string,
   catalogIds?: ReadonlySet<string>,
 ): boolean {
   if (catalogIds?.has(id)) return true
-  if (!id.toLowerCase().startsWith('grok')) return false
-  return !NON_CHAT_MODEL.test(id)
+  const lower = id.toLowerCase()
+  if (!lower.startsWith('grok')) return false
+  return !HIDDEN_GROK.test(lower)
+}
+
+/** Installed pi-ai catalog plus Grok 4.6 and Imagine rows the 0.82 pack omits. */
+export function expandInstalledCatalog(catalog: readonly Model<Api>[]): Model<Api>[] {
+  const template = catalog.find(model => model.id === DEFAULT_XAI_OAUTH_MODEL)
+    ?? catalog.find(model => model.api === 'openai-responses')
+    ?? catalog[0]
+  if (template === undefined) return [...catalog]
+  const seen = new Set(catalog.map(model => model.id))
+  const extras: Model<Api>[] = []
+  for (const extra of BUNDLED_EXTRAS) {
+    if (seen.has(extra.id)) continue
+    extras.push({
+      ...template,
+      id: extra.id,
+      name: extra.name,
+      ...extra.xhigh === true && template.thinkingLevelMap !== undefined
+        ? { thinkingLevelMap: { ...template.thinkingLevelMap, xhigh: 'xhigh' } }
+        : {},
+    })
+  }
+  return extras.length === 0 ? [...catalog] : [...catalog, ...extras]
 }
 
 export type CatalogSource = 'live' | 'cache' | 'fallback'
@@ -54,7 +85,7 @@ function titleCaseId(id: string): string {
 }
 
 function catalogModels(baseline: readonly Model<Api>[] = xaiProvider().getModels()): readonly Model<Api>[] {
-  return baseline
+  return expandInstalledCatalog(baseline)
 }
 
 function templateFor(id: string, catalog: readonly Model<Api>[]): Model<Api> {
@@ -80,18 +111,23 @@ export function materializeLiveModel(id: string, catalog: readonly Model<Api>[] 
 }
 
 /**
- * If `liveIds` is missing or empty, serve the installed catalog.
- * Otherwise serve only the live ids, each materialized against the catalog.
+ * Serve live grok ids when present, then keep bundled extras the listing
+ * omitted so 4.6 / Imagine stay visible even if /v1/models fails.
  */
 export function mergeLiveCatalog(
   catalog: readonly Model<Api>[],
   liveIds: readonly string[] | undefined,
 ): Model<Api>[] {
-  if (liveIds === undefined || liveIds.length === 0) return [...catalog]
-  const catalogIds = new Set(catalog.map(model => model.id))
-  const chatIds = liveIds.filter(id => isSelectableChatModel(id, catalogIds))
-  if (chatIds.length === 0) return [...catalog]
-  return chatIds.map(id => materializeLiveModel(id, catalog))
+  const expanded = expandInstalledCatalog(catalog)
+  if (liveIds === undefined || liveIds.length === 0) return expanded
+  const catalogIds = new Set(expanded.map(model => model.id))
+  const liveGrok = liveIds.filter(id => isSelectableChatModel(id, catalogIds))
+  const merged = liveGrok.map(id => materializeLiveModel(id, expanded))
+  const seen = new Set(merged.map(model => model.id))
+  for (const model of expanded) {
+    if (!seen.has(model.id)) merged.push(model)
+  }
+  return merged
 }
 
 export function preferredXaiOAuthModelFrom(models: readonly { id: string }[]): string {

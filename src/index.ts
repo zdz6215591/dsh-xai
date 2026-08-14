@@ -35,6 +35,7 @@ export {
 } from './auth-routes.ts'
 export type { LoginChallenge, XaiOAuthWebAuthStatus } from './auth-routes.ts'
 export {
+  expandInstalledCatalog,
   extractModelIds,
   fetchLiveModelIds,
   isSelectableChatModel,
@@ -58,6 +59,7 @@ export {
   assertSafeAuthorizationUrl,
   isLoopbackHost,
   isTerminalOAuthFailure,
+  isXaiAuthHost,
   trustedRequest,
   XAI_AUTH_HOSTS,
 } from './trust.ts'

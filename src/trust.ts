@@ -1,6 +1,12 @@
 /** Loopback Host fence and secret-free authorization URL checks. */
 
-export const XAI_AUTH_HOSTS = ['auth.x.ai', 'accounts.x.ai'] as const
+export const XAI_AUTH_HOSTS = ['auth.x.ai', 'accounts.x.ai', 'x.ai', 'www.x.ai', 'grok.com', 'www.grok.com'] as const
+
+export function isXaiAuthHost(host: string): boolean {
+  const hostname = host.toLowerCase()
+  if ((XAI_AUTH_HOSTS as readonly string[]).includes(hostname)) return true
+  return hostname.endsWith('.x.ai') || hostname.endsWith('.grok.com')
+}
 
 export const MAX_JSON_BODY_BYTES = 64 * 1024
 
@@ -60,8 +66,7 @@ export function assertSafeAuthorizationUrl(raw: string): string {
   if (url.protocol !== 'https:') {
     throw new Error('xAI returned an unsafe authorization URL')
   }
-  const host = url.hostname.toLowerCase()
-  if (!XAI_AUTH_HOSTS.includes(host as (typeof XAI_AUTH_HOSTS)[number])) {
+  if (!isXaiAuthHost(url.hostname)) {
     throw new Error('xAI returned an authorization URL on an unexpected host')
   }
   return url.href

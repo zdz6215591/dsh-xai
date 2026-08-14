@@ -5,16 +5,18 @@ import { Context } from "@deepseek-ai/cordis";
 import { AttachmentStore } from "@deepseek-ai/dsh-attachment";
 //#region src/catalog.d.ts
 declare const XAI_MODELS_URL = "https://api.x.ai/v1/models";
-/** Chat-capable Grok ids, plus anything already in the installed catalog. */
+/** Grok chat / imagine ids, plus anything already in the installed catalog. */
 declare function isSelectableChatModel(id: string, catalogIds?: ReadonlySet<string>): boolean;
+/** Installed pi-ai catalog plus Grok 4.6 and Imagine rows the 0.82 pack omits. */
+declare function expandInstalledCatalog(catalog: readonly Model<Api>[]): Model<Api>[];
 type CatalogSource = 'live' | 'cache' | 'fallback';
 /** Pull model ids from an OpenAI-shaped or gateway-shaped listing body. */
 declare function extractModelIds(body: unknown): string[];
 /** Turn a live id into a pi-ai model, inheriting catalog metadata when possible. */
 declare function materializeLiveModel(id: string, catalog?: readonly Model<Api>[]): Model<Api>;
 /**
- * If `liveIds` is missing or empty, serve the installed catalog.
- * Otherwise serve only the live ids, each materialized against the catalog.
+ * Serve live grok ids when present, then keep bundled extras the listing
+ * omitted so 4.6 / Imagine stay visible even if /v1/models fails.
  */
 declare function mergeLiveCatalog(catalog: readonly Model<Api>[], liveIds: readonly string[] | undefined): Model<Api>[];
 declare function preferredXaiOAuthModelFrom(models: readonly {
@@ -56,6 +58,7 @@ declare class XaiOAuthSession {
   /** Secret-free listing diagnostic from the last refresh. */
   get catalogError(): string | undefined;
   get catalogSource(): CatalogSource;
+  private installedCatalog;
   availableModels(): Model<Api>[];
   selectedModelIds(): string[] | undefined;
   visibleModels(): Model<Api>[];
@@ -105,7 +108,8 @@ declare function importXaiOAuthSession(session: XaiOAuthSession, filename?: stri
 //#endregion
 //#region src/trust.d.ts
 /** Loopback Host fence and secret-free authorization URL checks. */
-declare const XAI_AUTH_HOSTS: readonly ["auth.x.ai", "accounts.x.ai"];
+declare const XAI_AUTH_HOSTS: readonly ["auth.x.ai", "accounts.x.ai", "x.ai", "www.x.ai", "grok.com", "www.grok.com"];
+declare function isXaiAuthHost(host: string): boolean;
 /** True when Host is a loopback authority (DNS-rebinding defense). */
 declare function isLoopbackHost(hostHeader: string): boolean;
 /**
@@ -208,4 +212,4 @@ declare const Config: z<Config>;
  */
 declare function apply(ctx: Context, _config: Config): void;
 //#endregion
-export { type CatalogSource, Config, DEFAULT_XAI_OAUTH_MODEL, type GrokImportProbe, type LoginChallenge, XAI_AUTH_HOSTS, XAI_MODELS_URL, XAI_OAUTH_AUTH_FILENAME, XAI_OAUTH_AUTH_IMPORT_PATH, XAI_OAUTH_AUTH_LOGIN_PATH, XAI_OAUTH_AUTH_LOGOUT_PATH, XAI_OAUTH_AUTH_MODELS_PATH, XAI_OAUTH_AUTH_STATUS_PATH, XAI_OAUTH_ROUTE, XAI_OAUTH_STREAM_IDLE_TIMEOUT_MS, XAI_PI_PROVIDER, type XaiOAuthAuthStatus, XaiOAuthCredentialStore, XaiOAuthSession, type XaiOAuthWebAuthStatus, apply, assertSafeAuthorizationUrl, createXaiOAuthAdapter, extractModelIds, fetchLiveModelIds, grokAuthPath, importGrokAuth, importXaiOAuthFromGrok, importXaiOAuthSession, inject, isLoopbackHost, isSelectableChatModel, isTerminalOAuthFailure, loginXaiOAuth, loginXaiOAuthSession, logoutXaiOAuth, materializeLiveModel, mergeLiveCatalog, name, parseGrokAuthDocument, preferredXaiOAuthModel, preferredXaiOAuthModelFrom, probeGrokAuth, registerXaiOAuthAuthRoutes, safeMessage, trustedRequest, xaiOAuthAuthPath, xaiOAuthAuthStatus };
+export { type CatalogSource, Config, DEFAULT_XAI_OAUTH_MODEL, type GrokImportProbe, type LoginChallenge, XAI_AUTH_HOSTS, XAI_MODELS_URL, XAI_OAUTH_AUTH_FILENAME, XAI_OAUTH_AUTH_IMPORT_PATH, XAI_OAUTH_AUTH_LOGIN_PATH, XAI_OAUTH_AUTH_LOGOUT_PATH, XAI_OAUTH_AUTH_MODELS_PATH, XAI_OAUTH_AUTH_STATUS_PATH, XAI_OAUTH_ROUTE, XAI_OAUTH_STREAM_IDLE_TIMEOUT_MS, XAI_PI_PROVIDER, type XaiOAuthAuthStatus, XaiOAuthCredentialStore, XaiOAuthSession, type XaiOAuthWebAuthStatus, apply, assertSafeAuthorizationUrl, createXaiOAuthAdapter, expandInstalledCatalog, extractModelIds, fetchLiveModelIds, grokAuthPath, importGrokAuth, importXaiOAuthFromGrok, importXaiOAuthSession, inject, isLoopbackHost, isSelectableChatModel, isTerminalOAuthFailure, isXaiAuthHost, loginXaiOAuth, loginXaiOAuthSession, logoutXaiOAuth, materializeLiveModel, mergeLiveCatalog, name, parseGrokAuthDocument, preferredXaiOAuthModel, preferredXaiOAuthModelFrom, probeGrokAuth, registerXaiOAuthAuthRoutes, safeMessage, trustedRequest, xaiOAuthAuthPath, xaiOAuthAuthStatus };

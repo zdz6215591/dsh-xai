@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { xaiProvider } from '@earendil-works/pi-ai/providers/xai'
 import {
+  expandInstalledCatalog,
   extractModelIds,
   isSelectableChatModel,
   materializeLiveModel,
@@ -9,6 +10,7 @@ import {
 } from '../src/catalog.ts'
 
 const catalog = xaiProvider().getModels()
+const expanded = expandInstalledCatalog(catalog)
 
 describe('extractModelIds', () => {
   it('reads OpenAI-shaped data arrays', () => {
@@ -24,21 +26,31 @@ describe('extractModelIds', () => {
   })
 })
 
+describe('expandInstalledCatalog', () => {
+  it('adds grok-4.6 and Imagine rows the installed pack omits', () => {
+    const ids = expandInstalledCatalog(catalog).map(model => model.id)
+    expect(ids).toContain('grok-4.6')
+    expect(ids).toContain('grok-imagine-image')
+    expect(ids).toContain('grok-imagine-video')
+  })
+})
+
 describe('mergeLiveCatalog', () => {
-  it('keeps the installed catalog when live ids are missing', () => {
-    expect(mergeLiveCatalog(catalog, undefined).map(model => model.id)).toEqual(catalog.map(model => model.id))
-    expect(mergeLiveCatalog(catalog, []).map(model => model.id)).toEqual(catalog.map(model => model.id))
+  it('keeps the expanded catalog when live ids are missing', () => {
+    expect(mergeLiveCatalog(catalog, undefined).map(model => model.id)).toEqual(expanded.map(model => model.id))
+    expect(mergeLiveCatalog(catalog, []).map(model => model.id)).toEqual(expanded.map(model => model.id))
   })
 
-  it('drops non-chat live ids and falls back when nothing remains', () => {
+  it('keeps imagine live ids and still includes bundled extras', () => {
     const merged = mergeLiveCatalog(catalog, ['grok-4.5', 'grok-imagine-image', 'grok-imagine-video'])
-    expect(merged.map(model => model.id)).toEqual(['grok-4.5'])
-    expect(mergeLiveCatalog(catalog, ['grok-imagine-image']).map(model => model.id)).toEqual(catalog.map(model => model.id))
+    expect(merged.map(model => model.id)).toContain('grok-4.5')
+    expect(merged.map(model => model.id)).toContain('grok-imagine-image')
+    expect(merged.map(model => model.id)).toContain('grok-4.6')
   })
 
   it('narrows to live ids and inherits catalog metadata', () => {
     const merged = mergeLiveCatalog(catalog, ['grok-4.5', 'grok-4.6'])
-    expect(merged.map(model => model.id)).toEqual(['grok-4.5', 'grok-4.6'])
+    expect(merged.map(model => model.id).slice(0, 2)).toEqual(['grok-4.5', 'grok-4.6'])
     const known = merged.find(model => model.id === 'grok-4.5')
     const extra = merged.find(model => model.id === 'grok-4.6')
     expect(known?.api).toBe('openai-responses')
@@ -55,12 +67,13 @@ describe('materializeLiveModel', () => {
 })
 
 describe('isSelectableChatModel', () => {
-  it('keeps grok chat ids and drops media ids', () => {
+  it('keeps grok chat and imagine ids, drops unrelated media', () => {
     expect(isSelectableChatModel('grok-4.6')).toBe(true)
     expect(isSelectableChatModel('grok-build-0.1')).toBe(true)
-    expect(isSelectableChatModel('grok-imagine-image')).toBe(false)
-    expect(isSelectableChatModel('grok-imagine-video')).toBe(false)
+    expect(isSelectableChatModel('grok-imagine-image')).toBe(true)
+    expect(isSelectableChatModel('grok-imagine-video')).toBe(true)
     expect(isSelectableChatModel('tts-1')).toBe(false)
+    expect(isSelectableChatModel('grok-tts')).toBe(false)
   })
 })
 

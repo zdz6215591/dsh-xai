@@ -121,16 +121,34 @@ export function parseGrokAuthDocument(text: string, filename: string): OAuthCred
   return (candidates.find(candidate => candidate.preferred) ?? candidates[0]!).credential
 }
 
+const PROBE_TTL_MS = 3_000
+const probeCache = new Map<string, { at: number; mtime: number; result: GrokImportProbe }>()
+
 /** Whether ~/.grok/auth.json exists and looks importable. Never returns secrets. */
 export async function probeGrokAuth(filename: string = grokAuthPath()): Promise<GrokImportProbe> {
+  const now = Date.now()
+  let mtime = 0
   try {
-    await stat(filename)
+    mtime = (await stat(filename)).mtimeMs
+  } catch (error) {
+    const result = { available: false, path: filename }
+    if (isENOENT(error)) probeCache.set(filename, { at: now, mtime: 0, result })
+    return result
+  }
+  const cached = probeCache.get(filename)
+  if (cached !== undefined && cached.mtime === mtime && now - cached.at < PROBE_TTL_MS) {
+    return cached.result
+  }
+  try {
     const text = await readFile(filename, 'utf8')
     parseGrokAuthDocument(text, filename)
-    return { available: true, path: filename }
-  } catch (error) {
-    if (isENOENT(error)) return { available: false, path: filename }
-    return { available: false, path: filename }
+    const result = { available: true, path: filename }
+    probeCache.set(filename, { at: now, mtime, result })
+    return result
+  } catch {
+    const result = { available: false, path: filename }
+    probeCache.set(filename, { at: now, mtime, result })
+    return result
   }
 }
 

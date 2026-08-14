@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { xaiProvider } from '@earendil-works/pi-ai/providers/xai'
+import { expandInstalledCatalog } from '../src/catalog.ts'
 import { XAI_PI_PROVIDER } from '../src/ids.ts'
 import { XaiOAuthSession } from '../src/session.ts'
 import { XaiOAuthCredentialStore } from '../src/store.ts'
@@ -69,7 +70,7 @@ describe('XaiOAuthSession.refreshLiveCatalog', () => {
       await pending
       expect(session.catalogSource).toBe('fallback')
       expect(session.availableModels().map(model => model.id)).toEqual(
-        xaiProvider().getModels().map(model => model.id),
+        expandInstalledCatalog(xaiProvider().getModels()).map(model => model.id),
       )
     } finally {
       globalThis.fetch = original

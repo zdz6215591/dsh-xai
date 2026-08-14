@@ -21,9 +21,10 @@ export const en = {
   catalogLive: 'From your xAI account',
   catalogCache: 'From the last successful listing',
   catalogFallback: 'Installed catalog (live listing unavailable)',
-  catalogError: 'Could not refresh the live model list.',
+  catalogError: 'Could not refresh the live account list; showing the bundled catalog.',
   selectAll: 'Show all',
-  modelHint: 'Checked models appear in the composer picker as xai-oauth / <id>.',
+  modelHint: 'Checked models appear in the composer picker as xai-oauth / <id>. Imagine rows are image/video models.',
+  openingBrowser: 'Opening the xAI sign-in page…',
 }
 
 export type XaiOAuthSettingsKey = keyof typeof en
@@ -50,7 +51,8 @@ export const zh: { [Key in XaiOAuthSettingsKey]: string } = {
   catalogLive: '来自当前 xAI 账号',
   catalogCache: '来自上一次成功拉取',
   catalogFallback: '已安装目录（未能拉取账号列表）',
-  catalogError: '无法刷新线上模型列表。',
+  catalogError: '未能刷新账号线上目录，先显示内置目录。',
   selectAll: '全部显示',
-  modelHint: '勾选的模型会出现在对话的模型选择器里，名字是 xai-oauth / 模型 id。',
+  modelHint: '勾选的模型会出现在对话的模型选择器里，名字是 xai-oauth / 模型 id。Imagine 是生图/视频模型。',
+  openingBrowser: '正在打开 xAI 登录页…',
 }

@@ -11,6 +11,7 @@ import { xaiProvider } from '@earendil-works/pi-ai/providers/xai'
 import { writeFileAtomic } from '@deepseek-ai/dsh-atomic-write'
 import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 import {
+  expandInstalledCatalog,
   fetchLiveModelIds,
   mergeLiveCatalog,
   type CatalogSource,
@@ -125,6 +126,10 @@ export class XaiOAuthSession {
     return this.source
   }
 
+  private installedCatalog(): Model<Api>[] {
+    return expandInstalledCatalog(this.baseline.getModels())
+  }
+
   availableModels(): Model<Api>[] {
     return mergeLiveCatalog(this.baseline.getModels(), this.liveIds)
   }
@@ -137,7 +142,7 @@ export class XaiOAuthSession {
     const available = this.availableModels()
     if (this.selectedIds === undefined || this.selectedIds.length === 0) return available
     const byId = new Map(available.map(model => [model.id, model]))
-    const catalog = this.baseline.getModels()
+    const catalog = this.installedCatalog()
     return this.selectedIds.map(id => byId.get(id) ?? materializeLiveModel(id, catalog))
   }
 

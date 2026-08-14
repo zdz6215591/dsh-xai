@@ -105,19 +105,37 @@ export function XaiSettings({ t }: XaiOAuthSettingsProps) {
 
   const signIn = async (): Promise<void> => {
     const popup = window.open('about:blank', '_blank')
-    if (popup !== null) popup.opener = null
+    if (popup !== null) {
+      popup.opener = null
+      try {
+        popup.document.open()
+        popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>xAI</title></head><body style="font:14px/22px system-ui,sans-serif;padding:24px;color:#111">Connecting to xAI…</body></html>`)
+        popup.document.close()
+      } catch {
+        // Some browsers lock about:blank after opener is cleared; replace still works.
+      }
+    }
     setBusy(true)
     setPopupBlocked(false)
     setStatus({ status: 'signing-in' })
     try {
       const challenge = await jsonRequest<LoginChallenge>(LOGIN_PATH, 'POST')
-      if (popup === null) {
+      const next: AccountStatus = {
+        status: 'signing-in',
+        url: challenge.url,
+        ...challenge.userCode === undefined ? {} : { userCode: challenge.userCode },
+      }
+      if (popup === null || popup.closed) {
         setPopupBlocked(true)
-        setStatus({ status: 'signing-in', url: challenge.url, ...challenge.userCode === undefined ? {} : { userCode: challenge.userCode } })
+        setStatus(next)
         return
       }
-      popup.location.replace(challenge.url)
-      setStatus({ status: 'signing-in', url: challenge.url, ...challenge.userCode === undefined ? {} : { userCode: challenge.userCode } })
+      try {
+        popup.location.replace(challenge.url)
+      } catch {
+        setPopupBlocked(true)
+      }
+      setStatus(next)
     } catch (error: unknown) {
       popup?.close()
       setStatus({ status: 'error', message: error instanceof Error ? error.message : t('requestFailed') })
@@ -235,9 +253,12 @@ export function XaiSettings({ t }: XaiOAuthSettingsProps) {
                     )
                   })}
                 </ul>
-                {status.catalogError === undefined ? null : <p style={errorStyle}>{t('catalogError')}</p>}
+                {status.catalogError === undefined ? null : <p style={errorStyle}>{t('catalogError')} {status.catalogError}</p>}
               </div>
             )
+          : null}
+        {status.status === 'signing-in' && status.url === undefined
+          ? <p style={bodyStyle}>{t('openingBrowser')}</p>
           : null}
         {status.status === 'signing-in' && status.userCode !== undefined
           ? <p style={bodyStyle}>{t('userCode')} <span style={codeStyle}>{status.userCode}</span></p>

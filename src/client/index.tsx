@@ -22,10 +22,13 @@ export function apply(ctx: ClientContext): void {
   const namespace = 'settings.xai-oauth'
   ctx.effect(() => ctx.locale.register(namespace, { zh, en }), 'dsh-xai: settings copy')
   const t = ctx.locale.bind(namespace) as XaiOAuthSettingsInjected['t']
+  // Same section id as the official Models page so the settings shell
+  // renders this card in that page (`only: 'models'`). The nav key is `id`,
+  // so this does not add a sibling next to 通用 / 模型 / 插件.
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section',
-    id: 'xai-oauth',
-    order: 16,
+    id: 'models',
+    order: 11,
     label: () => t('nav'),
     inject: (): XaiOAuthSettingsInjected => ({ t }),
   }, XaiSettings))
