@@ -40,6 +40,6 @@ export default defineConfig([
     dts: false,
     outDir: 'lib',
     fixedExtension: false,
-    deps: { neverBundle: ['react', 'react/jsx-runtime'] },
+    deps: { neverBundle: ['react', 'react/jsx-runtime', 'react-dom'] },
   },
 ])
