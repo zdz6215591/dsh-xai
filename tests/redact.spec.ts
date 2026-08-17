@@ -12,4 +12,9 @@ describe('safeMessage', () => {
   it('caps diagnostic length', () => {
     expect(safeMessage('x'.repeat(2000)).length).toBe(1000)
   })
+
+  it('includes the fetch cause so proxy timeouts are visible', () => {
+    const error = new Error('fetch failed', { cause: Object.assign(new Error('Connect Timeout Error'), { code: 'UND_ERR_CONNECT_TIMEOUT' }) })
+    expect(safeMessage(error)).toMatch(/fetch failed.*Connect Timeout Error/)
+  })
 })

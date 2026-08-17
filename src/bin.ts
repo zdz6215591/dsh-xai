@@ -14,8 +14,11 @@ import {
   XaiOAuthSession,
 } from './index.ts'
 import { grokAuthPath } from './grok-import.ts'
+import { installNetworkDefaults } from './network.ts'
 import { safeMessage } from './redact.ts'
 import { assertSafeAuthorizationUrl } from './trust.ts'
+
+installNetworkDefaults()
 
 type Action = 'login' | 'logout' | 'status' | 'import'
 

@@ -12,6 +12,7 @@ import type {} from '@deepseek-ai/dsh-llm'
 import { createXaiOAuthAdapter } from './adapter.ts'
 import { registerXaiOAuthAuthRoutes } from './auth-routes.ts'
 import { XAI_OAUTH_ROUTE } from './ids.ts'
+import { installNetworkDefaults } from './network.ts'
 import { XaiOAuthSession } from './session.ts'
 import { XaiOAuthCredentialStore } from './store.ts'
 
@@ -54,6 +55,7 @@ export {
   XAI_OAUTH_STREAM_IDLE_TIMEOUT_MS,
   XAI_PI_PROVIDER,
 } from './ids.ts'
+export { installNetworkDefaults } from './network.ts'
 export { safeMessage } from './redact.ts'
 export {
   assertSafeAuthorizationUrl,
@@ -82,6 +84,7 @@ export const Config: z<Config> = z.object({})
  * @param ctx - plugin context carrying the LLM registry plus optional web server.
  */
 export function apply(ctx: Context, _config: Config): void {
+  installNetworkDefaults()
   const session = new XaiOAuthSession(new XaiOAuthCredentialStore(), () => {
     ctx.emit('llm/adapters-updated')
   })

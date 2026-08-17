@@ -198,6 +198,10 @@ declare const DEFAULT_XAI_OAUTH_MODEL = "grok-4.5";
 /** Provider idle ceiling used by the composite route. */
 declare const XAI_OAUTH_STREAM_IDLE_TIMEOUT_MS = 300000;
 //#endregion
+//#region src/network.d.ts
+/** Prefer IPv4 and send undici/fetch through HTTP(S)_PROXY when present. */
+declare function installNetworkDefaults(): void;
+//#endregion
 //#region src/redact.d.ts
 /** Remove token-like strings from an external OAuth diagnostic. */
 declare function safeMessage(error: unknown): string;
@@ -216,4 +220,4 @@ declare const Config: z<Config>;
  */
 declare function apply(ctx: Context, _config: Config): void;
 //#endregion
-export { type CatalogSource, Config, DEFAULT_XAI_OAUTH_MODEL, type GrokImportProbe, type LoginChallenge, XAI_AUTH_HOSTS, XAI_MODELS_URL, XAI_OAUTH_AUTH_FILENAME, XAI_OAUTH_AUTH_IMPORT_PATH, XAI_OAUTH_AUTH_LOGIN_PATH, XAI_OAUTH_AUTH_LOGOUT_PATH, XAI_OAUTH_AUTH_MODELS_PATH, XAI_OAUTH_AUTH_STATUS_PATH, XAI_OAUTH_ROUTE, XAI_OAUTH_STREAM_IDLE_TIMEOUT_MS, XAI_PI_PROVIDER, type XaiOAuthAuthStatus, XaiOAuthCredentialStore, XaiOAuthSession, type XaiOAuthWebAuthStatus, apply, assertSafeAuthorizationUrl, createXaiOAuthAdapter, expandInstalledCatalog, extractModelIds, fetchLiveModelIds, grokAuthPath, importGrokAuth, importXaiOAuthFromGrok, importXaiOAuthSession, inject, isLoopbackHost, isSelectableChatModel, isTerminalOAuthFailure, isXaiAuthHost, loginXaiOAuth, loginXaiOAuthSession, logoutXaiOAuth, materializeLiveModel, mergeLiveCatalog, name, parseGrokAuthDocument, preferredXaiOAuthModel, preferredXaiOAuthModelFrom, probeGrokAuth, registerXaiOAuthAuthRoutes, safeMessage, trustedRequest, xaiOAuthAuthPath, xaiOAuthAuthStatus };
+export { type CatalogSource, Config, DEFAULT_XAI_OAUTH_MODEL, type GrokImportProbe, type LoginChallenge, XAI_AUTH_HOSTS, XAI_MODELS_URL, XAI_OAUTH_AUTH_FILENAME, XAI_OAUTH_AUTH_IMPORT_PATH, XAI_OAUTH_AUTH_LOGIN_PATH, XAI_OAUTH_AUTH_LOGOUT_PATH, XAI_OAUTH_AUTH_MODELS_PATH, XAI_OAUTH_AUTH_STATUS_PATH, XAI_OAUTH_ROUTE, XAI_OAUTH_STREAM_IDLE_TIMEOUT_MS, XAI_PI_PROVIDER, type XaiOAuthAuthStatus, XaiOAuthCredentialStore, XaiOAuthSession, type XaiOAuthWebAuthStatus, apply, assertSafeAuthorizationUrl, createXaiOAuthAdapter, expandInstalledCatalog, extractModelIds, fetchLiveModelIds, grokAuthPath, importGrokAuth, importXaiOAuthFromGrok, importXaiOAuthSession, inject, installNetworkDefaults, isLoopbackHost, isSelectableChatModel, isTerminalOAuthFailure, isXaiAuthHost, loginXaiOAuth, loginXaiOAuthSession, logoutXaiOAuth, materializeLiveModel, mergeLiveCatalog, name, parseGrokAuthDocument, preferredXaiOAuthModel, preferredXaiOAuthModelFrom, probeGrokAuth, registerXaiOAuthAuthRoutes, safeMessage, trustedRequest, xaiOAuthAuthPath, xaiOAuthAuthStatus };

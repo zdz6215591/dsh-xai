@@ -5,6 +5,7 @@ const nodeExternal = [
   /^@earendil-works\//,
   'react',
   'react/jsx-runtime',
+  'undici',
 ]
 
 export default defineConfig([
