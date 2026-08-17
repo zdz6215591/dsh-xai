@@ -4,34 +4,39 @@
 
 在 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 里用 SuperGrok / X Premium 订阅登录 xAI，调用 Grok。不需要 `XAI_API_KEY`，也不需要改 dsh 源码。
 
+本仓库是 [MirDie/dsh-xai](https://github.com/MirDie/dsh-xai) 的 fork，修了登录、设置页、模型目录和 Windows 代理。要用这些修复，请装**本仓库**，不要装上游。
+
 这是一个独立的 dsh bundle，会提供：
 
-- Settings 或 CLI 里的 SuperGrok / X Premium OAuth，并自动刷新 token
-- 一次性导入 `~/.grok/auth.json`（Grok CLI）。**不会改写**那个文件
+- **设置 → 模型**里的 xAI Grok 卡片，或 CLI 里的 SuperGrok / X Premium OAuth，并自动刷新 token
+- 一次性导入 `$GROK_HOME/auth.json`（默认 `~/.grok/auth.json`）。**不会改写**那个文件
 - 登录或导入后请求 `GET https://api.x.ai/v1/models`，模型列表按当前账号收窄；拉失败则用安装目录兜底
+- 目录里有 grok-4.6，以及 Imagine 生图 / 视频 id
 - 流式、工具调用、reasoning、compaction 走 dsh 原有 LLM 服务
 
 内置目录里的 `xai`（API Key）路由不会被动。本插件注册的是 `xai-oauth`，两条路可以并存。
 
 ## 安装
 
-**不用先自己 clone。** `dsh plugin add` 会按 GitHub 地址把包装进当前 profile。
+`dsh plugin add` 会在 profile 目录里调用 **pnpm**。先保证 PATH 里有 pnpm（Node 22+ 可以 `corepack enable`）。
+
+**不用先自己 clone。**
 
 ```sh
-dsh plugin --profile web add github:MirDie/dsh-xai
+dsh plugin --profile web add github:zdz6215591/dsh-xai
 dsh web
 ```
 
 用 `npx` 起的 Web、PATH 里没有 `dsh` 时，把前面的 `dsh` 换成 `npx @deepseek-ai/dsh`：
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile web add github:MirDie/dsh-xai
+npx @deepseek-ai/dsh plugin --profile web add github:zdz6215591/dsh-xai
 npx @deepseek-ai/dsh web
 ```
 
 不要写 `npm dsh` 或在家目录里写 `pnpm dsh`。`npx` 只是临时跑一次，不会安装全局 `dsh` 命令。
 
-打开 **设置 → xAI Grok → 使用 SuperGrok 登录**。插件会走 device-code，打开验证链接，你在浏览器里批准即可。无头 / SSH 可以用 CLI：
+打开 **设置 → 模型**，在 **xAI Grok** 卡片里点 **使用 SuperGrok 登录**。插件会走 device-code，打开验证链接，你在浏览器里批准即可。无头 / SSH 可以用 CLI：
 
 ```sh
 dsh plugin --profile web exec dsh-xai login
@@ -40,14 +45,16 @@ dsh plugin --profile web exec dsh-xai status
 dsh plugin --profile web exec dsh-xai logout
 ```
 
-本插件**不会**改 profile 的默认模型。登录后在对话的模型选择器里选 `xai-oauth / <id>`（或到 Settings → Models 保存）。dsh 里已经存过的默认模型仍然优先。
+本插件**不会**改 profile 的默认模型。登录后在对话的模型选择器里选 `xai-oauth / <id>`（或到 设置 → 模型 保存）。dsh 里已经存过的默认模型仍然优先。
 
-设置页可以勾选要出现在模型选择器里的对话模型。名称形如 `xai-oauth / grok-4.5`。`GET /v1/models` 里的图片、视频、TTS 等 id 会被过滤。登录后如果选择器还是空的，更新插件并重启 `dsh web`。
+xAI Grok 卡片可以勾选要出现在选择器里的模型。名称形如 `xai-oauth / grok-4.6`。对话和 Imagine 生图 / 视频会保留；TTS / 语音 / STT / embed / realtime 会被过滤。登录后如果选择器还是空的，更新插件并重启 `dsh web`。
+
+Windows 上如果开了 Clash 等系统代理，CLI 登录报 `fetch failed` 时请保持代理开启——本插件会让 Node `fetch` 走 `HTTP(S)_PROXY`。
 
 只有在改这个插件本身时，才需要把仓库拉到本地，再用路径安装：
 
 ```sh
-git clone https://github.com/MirDie/dsh-xai.git
+git clone https://github.com/zdz6215591/dsh-xai.git
 dsh plugin --profile web add ./dsh-xai
 ```
 
@@ -74,6 +81,8 @@ xAI 的 refresh token 会轮换。导入之后，dsh 下一次刷新可能让 Gr
 npm install
 npm run check
 ```
+
+配套的 Grok skill（`dsh-plugin`，用来写 / 审其它 DeepSeek Harness 插件）**不在本仓库里**。从压缩包安装：解压到 `~/.grok/skills/dsh-plugin/`，然后运行 `/dsh-plugin`。
 
 ## 许可证
 
