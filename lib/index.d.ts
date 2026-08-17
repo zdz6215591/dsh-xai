@@ -108,7 +108,7 @@ declare function importXaiOAuthSession(session: XaiOAuthSession, filename?: stri
 //#endregion
 //#region src/trust.d.ts
 /** Loopback Host fence and secret-free authorization URL checks. */
-declare const XAI_AUTH_HOSTS: readonly ["auth.x.ai", "accounts.x.ai", "x.ai", "www.x.ai", "grok.com", "www.grok.com"];
+declare const XAI_AUTH_HOSTS: readonly ["auth.x.ai", "accounts.x.ai", "x.ai", "www.x.ai", "grok.com", "www.grok.com", "x.com", "www.x.com", "twitter.com", "www.twitter.com"];
 declare function isXaiAuthHost(host: string): boolean;
 /** True when Host is a loopback authority (DNS-rebinding defense). */
 declare function isLoopbackHost(hostHeader: string): boolean;
@@ -126,7 +126,11 @@ declare function trustedRequest(req: {
     'sec-fetch-site'?: string | string[];
   };
 }): boolean;
-/** Reject non-HTTPS URLs and hosts other than xAI's auth servers. */
+/**
+ * Device-code pages are opened in the user's browser. Refuse non-HTTPS
+ * (javascript:, http:) but do not abort login over an unexpected https host —
+ * xAI has used several first-party hosts, and rejecting them closed the popup.
+ */
 declare function assertSafeAuthorizationUrl(raw: string): string;
 declare function isTerminalOAuthFailure(error: unknown): boolean;
 //#endregion

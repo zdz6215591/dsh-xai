@@ -1,11 +1,25 @@
 /** Loopback Host fence and secret-free authorization URL checks. */
 
-export const XAI_AUTH_HOSTS = ['auth.x.ai', 'accounts.x.ai', 'x.ai', 'www.x.ai', 'grok.com', 'www.grok.com'] as const
+export const XAI_AUTH_HOSTS = [
+  'auth.x.ai',
+  'accounts.x.ai',
+  'x.ai',
+  'www.x.ai',
+  'grok.com',
+  'www.grok.com',
+  'x.com',
+  'www.x.com',
+  'twitter.com',
+  'www.twitter.com',
+] as const
 
 export function isXaiAuthHost(host: string): boolean {
   const hostname = host.toLowerCase()
   if ((XAI_AUTH_HOSTS as readonly string[]).includes(hostname)) return true
-  return hostname.endsWith('.x.ai') || hostname.endsWith('.grok.com')
+  return hostname.endsWith('.x.ai')
+    || hostname.endsWith('.grok.com')
+    || hostname.endsWith('.x.com')
+    || hostname.endsWith('.twitter.com')
 }
 
 export const MAX_JSON_BODY_BYTES = 64 * 1024
@@ -55,7 +69,11 @@ export function trustedRequest(req: {
   }
 }
 
-/** Reject non-HTTPS URLs and hosts other than xAI's auth servers. */
+/**
+ * Device-code pages are opened in the user's browser. Refuse non-HTTPS
+ * (javascript:, http:) but do not abort login over an unexpected https host —
+ * xAI has used several first-party hosts, and rejecting them closed the popup.
+ */
 export function assertSafeAuthorizationUrl(raw: string): string {
   let url: URL
   try {
@@ -65,9 +83,6 @@ export function assertSafeAuthorizationUrl(raw: string): string {
   }
   if (url.protocol !== 'https:') {
     throw new Error('xAI returned an unsafe authorization URL')
-  }
-  if (!isXaiAuthHost(url.hostname)) {
-    throw new Error('xAI returned an authorization URL on an unexpected host')
   }
   return url.href
 }

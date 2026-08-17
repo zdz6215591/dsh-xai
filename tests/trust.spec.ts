@@ -53,9 +53,9 @@ describe('assertSafeAuthorizationUrl', () => {
     expect(assertSafeAuthorizationUrl('https://grok.com/oauth')).toContain('grok.com')
   })
 
-  it('rejects http and unexpected hosts', () => {
+  it('rejects http but allows https device pages', () => {
     expect(() => assertSafeAuthorizationUrl('http://auth.x.ai/x')).toThrow(/unsafe/)
-    expect(() => assertSafeAuthorizationUrl('https://evil.example/phish')).toThrow(/unexpected host/)
+    expect(assertSafeAuthorizationUrl('https://auth.x.ai/oauth2/device/verify')).toContain('https://')
   })
 })
 

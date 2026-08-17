@@ -147,22 +147,24 @@ export class XaiOAuthWebAuth {
   }
 
   private acceptChallenge(challenge: LoginChallenge): void {
+    let url = challenge.url
     try {
-      assertSafeAuthorizationUrl(challenge.url)
+      url = assertSafeAuthorizationUrl(challenge.url)
     } catch (error: unknown) {
       const rejected = error instanceof Error ? error : new Error('xAI returned an invalid authorization URL')
       this.cancellation?.abort(rejected)
       this.rejectChallenge(rejected)
       return
     }
-    this.challenge = challenge
+    const accepted = { ...challenge, url }
+    this.challenge = accepted
     this.state = {
       status: 'signing-in',
-      url: challenge.url,
+      url,
       grokImportAvailable: false,
       ...challenge.userCode === undefined ? {} : { userCode: challenge.userCode },
     }
-    for (const waiter of this.challengeWaiters.splice(0)) waiter.resolve(challenge)
+    for (const waiter of this.challengeWaiters.splice(0)) waiter.resolve(accepted)
   }
 
   private async readStoredStatus(): Promise<XaiOAuthWebAuthStatus> {

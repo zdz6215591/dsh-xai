@@ -137,8 +137,17 @@ export function XaiSettings({ t }: XaiOAuthSettingsProps) {
       }
       setStatus(next)
     } catch (error: unknown) {
-      popup?.close()
-      setStatus({ status: 'error', message: error instanceof Error ? error.message : t('requestFailed') })
+      const message = error instanceof Error ? error.message : t('requestFailed')
+      try {
+        if (popup !== null && !popup.closed) {
+          popup.document.open()
+          popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>xAI</title></head><body style="font:14px/22px system-ui,sans-serif;padding:24px;color:#111"><p>${message.replace(/[<>&]/g, '')}</p><p>${t('loginNetworkHint')}</p></body></html>`)
+          popup.document.close()
+        }
+      } catch {
+        popup?.close()
+      }
+      setStatus({ status: 'error', message: `${message} ${t('loginNetworkHint')}` })
     } finally {
       setBusy(false)
     }

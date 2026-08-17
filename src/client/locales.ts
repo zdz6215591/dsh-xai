@@ -25,6 +25,7 @@ export const en = {
   selectAll: 'Show all',
   modelHint: 'Checked models appear in the composer picker as xai-oauth / <id>. Imagine rows are image/video models.',
   openingBrowser: 'Opening the xAI sign-in page…',
+  loginNetworkHint: 'If this keeps failing, import from Grok CLI, or run: dsh plugin --profile web exec dsh-xai login',
 }
 
 export type XaiOAuthSettingsKey = keyof typeof en
@@ -55,4 +56,5 @@ export const zh: { [Key in XaiOAuthSettingsKey]: string } = {
   selectAll: '全部显示',
   modelHint: '勾选的模型会出现在对话的模型选择器里，名字是 xai-oauth / 模型 id。Imagine 是生图/视频模型。',
   openingBrowser: '正在打开 xAI 登录页…',
+  loginNetworkHint: '如果一直失败，请改用「从 Grok CLI 导入」，或在终端运行：dsh plugin --profile web exec dsh-xai login',
 }

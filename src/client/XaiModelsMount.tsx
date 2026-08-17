@@ -34,7 +34,7 @@ export function XaiModelsMount({ t }: XaiModelsMountProps) {
         setHost(undefined)
         return
       }
-      if (mount !== undefined && mount.parentElement === page) return
+      if (mount !== undefined && page.contains(mount)) return
       mount?.remove()
       mount = document.createElement('div')
       mount.dataset.dshXai = 'models-card'
